@@ -24,6 +24,7 @@ import { DeepSeekApi } from "./platforms/deepseek";
 import { XAIApi } from "./platforms/xai";
 import { ChatGLMApi } from "./platforms/glm";
 import { SiliconflowApi } from "./platforms/siliconflow";
+import { BedrockApi } from "./platforms/bedrock";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
@@ -172,6 +173,9 @@ export class ClientApi {
         break;
       case ModelProvider.SiliconFlow:
         this.llm = new SiliconflowApi();
+        break;
+      case ModelProvider.Bedrock:
+        this.llm = new BedrockApi();
         break;
       default:
         this.llm = new ChatGPTApi();
@@ -356,7 +360,7 @@ export function getHeaders(ignoreHeaders: boolean = false) {
   return headers;
 }
 
-export function getClientApi(provider: ServiceProvider): ClientApi {
+export function getClientApi(provider: ServiceProvider | string): ClientApi {
   switch (provider) {
     case ServiceProvider.Google:
       return new ClientApi(ModelProvider.GeminiPro);
@@ -382,6 +386,9 @@ export function getClientApi(provider: ServiceProvider): ClientApi {
       return new ClientApi(ModelProvider.ChatGLM);
     case ServiceProvider.SiliconFlow:
       return new ClientApi(ModelProvider.SiliconFlow);
+    case ServiceProvider.Bedrock:
+    case "AWS Bedrock":
+      return new ClientApi(ModelProvider.Bedrock);
     default:
       return new ClientApi(ModelProvider.GPT);
   }
