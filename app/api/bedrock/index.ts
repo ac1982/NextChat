@@ -77,7 +77,14 @@ export async function handle(
     });
 
     const body = await req.json();
-    console.log("[Bedrock] request body: ", body);
+    console.log(
+      "[Bedrock] Request - Model:",
+      body.model,
+      "Stream:",
+      body.stream,
+      "Messages count:",
+      body.messages.length,
+    );
 
     const {
       messages,
