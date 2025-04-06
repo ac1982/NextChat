@@ -361,10 +361,45 @@ export function getHeaders(ignoreHeaders: boolean = false) {
 }
 
 export function getClientApi(provider: ServiceProvider | string): ClientApi {
-  switch (provider) {
+  console.log(
+    "[getClientApi] Received Provider (raw):",
+    provider,
+    "| Type:",
+    typeof provider,
+  );
+
+  // Standardize the provider name to match Enum case (TitleCase)
+  let standardizedProvider: ServiceProvider | string;
+  if (typeof provider === "string") {
+    // Convert known lowercase versions to their Enum equivalent
+    switch (provider.toLowerCase()) {
+      case "bedrock":
+        standardizedProvider = ServiceProvider.Bedrock;
+        break;
+      case "openai":
+        standardizedProvider = ServiceProvider.OpenAI;
+        break;
+      case "google":
+        standardizedProvider = ServiceProvider.Google;
+        break;
+      // Add other potential lowercase strings if needed
+      default:
+        standardizedProvider = provider; // Keep unknown strings as is
+    }
+  } else {
+    standardizedProvider = provider; // Already an Enum value
+  }
+
+  console.log("[getClientApi] Standardized Provider:", standardizedProvider);
+
+  switch (standardizedProvider) {
     case ServiceProvider.Google:
+      console.log(
+        "[getClientApi] Returning ClientApi(ModelProvider.GeminiPro)",
+      );
       return new ClientApi(ModelProvider.GeminiPro);
     case ServiceProvider.Anthropic:
+      console.log("[getClientApi] Returning ClientApi(ModelProvider.Claude)");
       return new ClientApi(ModelProvider.Claude);
     case ServiceProvider.Baidu:
       return new ClientApi(ModelProvider.Ernie);
@@ -387,9 +422,15 @@ export function getClientApi(provider: ServiceProvider | string): ClientApi {
     case ServiceProvider.SiliconFlow:
       return new ClientApi(ModelProvider.SiliconFlow);
     case ServiceProvider.Bedrock:
-    case "AWS Bedrock":
+      console.log(
+        "[getClientApi] Returning ClientApi(ModelProvider.Bedrock) for",
+        standardizedProvider,
+      );
       return new ClientApi(ModelProvider.Bedrock);
     default:
+      console.log(
+        `[getClientApi] Provider '${provider}' (Standardized: '${standardizedProvider}') not matched, returning default GPT.`,
+      );
       return new ClientApi(ModelProvider.GPT);
   }
 }
