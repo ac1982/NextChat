@@ -59,13 +59,6 @@ export async function handle(
 
   try {
     const config = getServerSideConfig();
-    if (!config.isBedrock) {
-      // This check might be redundant due to getAwsCredentials, but good practice
-      return NextResponse.json(
-        { error: true, msg: "AWS Bedrock is not configured properly" },
-        { status: 500 },
-      );
-    }
 
     const bedrockRegion = config.bedrockRegion as string;
     const bedrockEndpoint = config.bedrockEndpoint;

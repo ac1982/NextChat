@@ -720,9 +720,10 @@ export function ChatActions(props: {
                   targetProvider = upperProvider as ServiceProvider;
                 } else {
                   console.error(
-                    `[ChatActions] Unknown provider ID: ${providerId}`,
+                    `[ChatActions] Unknown provider ID: ${providerId}. Falling back to OpenAI.`,
                   );
                   // Handle error or fallback if needed
+                  targetProvider = ServiceProvider.OpenAI; // Fallback for unrecognized provider
                 }
               } else {
                 // Handle case where providerId is missing, maybe default to OpenAI?
