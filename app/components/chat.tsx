@@ -741,7 +741,7 @@ export function ChatActions(props: {
                 // Only update if we found a valid provider
                 chatStore.updateTargetSession(session, (session) => {
                   session.mask.modelConfig.model = model as ModelType;
-                  session.mask.modelConfig.providerName = targetProvider; // Use the Enum value
+                  session.mask.modelConfig.providerName = targetProvider!; // Use the Enum value (Assert non-null)
                   session.mask.syncGlobalConfig = false;
                   console.log(
                     "[ChatActions] Updated session modelConfig:",
