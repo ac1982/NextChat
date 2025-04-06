@@ -15,7 +15,15 @@ const ALLOWED_PATH = new Set([BedrockConfig.ChatPath]);
 function getAwsCredentials() {
   const config = getServerSideConfig();
   if (!config.isBedrock) {
-    throw new Error("AWS Bedrock is not configured properly");
+    throw new Error(
+      "AWS Bedrock is not configured properly (ENABLE_AWS_BEDROCK is not true)",
+    );
+  }
+  if (!config.bedrockAccessKeyId) {
+    throw new Error("AWS Bedrock Access Key ID is missing or empty.");
+  }
+  if (!config.bedrockSecretAccessKey) {
+    throw new Error("AWS Bedrock Secret Access Key is missing or empty.");
   }
   return {
     accessKeyId: config.bedrockAccessKeyId as string,
