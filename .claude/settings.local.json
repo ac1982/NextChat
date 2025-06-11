@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(yarn lint)",
+      "Bash(git add:*)",
+      "WebFetch(domain:nextjs.org)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(yarn test:ci)",
+      "Bash(yarn add next@latest react@latest react-dom@latest)",
+      "Bash(yarn add:*)",
+      "Bash(npx:*)",
+      "Bash(yarn build)"
+    ],
+    "deny": []
+  }
+}

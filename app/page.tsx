@@ -1,5 +1,7 @@
+"use client";
+
 import { Analytics } from "@vercel/analytics/react";
-import { getServerSideConfig } from "./config/server";
+import { getClientConfig } from "./config/client";
 import dynamic from "next/dynamic";
 
 const Home = dynamic(
@@ -9,17 +11,13 @@ const Home = dynamic(
   },
 );
 
-const serverConfig = getServerSideConfig();
+const clientConfig = getClientConfig();
 
-export default async function App() {
+export default function App() {
   return (
     <>
       <Home />
-      {serverConfig?.isVercel && (
-        <>
-          <Analytics />
-        </>
-      )}
+      <Analytics />
     </>
   );
 }
