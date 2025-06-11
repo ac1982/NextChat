@@ -12,7 +12,9 @@
       "Bash(yarn add next@latest react@latest react-dom@latest)",
       "Bash(yarn add:*)",
       "Bash(npx:*)",
-      "Bash(yarn build)"
+      "Bash(yarn build)",
+      "Bash(rm:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
