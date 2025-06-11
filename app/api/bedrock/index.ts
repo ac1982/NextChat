@@ -374,7 +374,7 @@ export async function handle(
     const payload = {
       anthropic_version: "bedrock-2023-05-31",
       max_tokens:
-        typeof max_tokens === "number" && max_tokens > 0 ? max_tokens : 4096,
+        typeof max_tokens === "number" && max_tokens > 0 ? max_tokens : 8000,
       temperature:
         typeof temperature === "number" && temperature >= 0 && temperature <= 1
           ? temperature

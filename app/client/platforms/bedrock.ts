@@ -31,7 +31,7 @@ export class BedrockApi implements LLMApi {
           messages,
           temperature: modelConfig.temperature,
           stream: !!modelConfig.stream,
-          max_tokens: (modelConfig as any).max_tokens || 4096, // Cast to access max_tokens from ModelConfig
+          max_tokens: (modelConfig as any).max_tokens || 8000, // Cast to access max_tokens from ModelConfig
         }),
         signal: controller.signal,
         headers: getHeaders(), // getHeaders should handle Bedrock (no auth needed)
