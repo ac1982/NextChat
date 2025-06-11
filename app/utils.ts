@@ -20,8 +20,8 @@ export function trimTopic(topic: string) {
   return (
     topic
       // fix for gemini
-      .replace(/^["“”*]+|["“”*]+$/g, "")
-      .replace(/[，。！？”“"、,.!?*]*$/, "")
+      .replace(/^["""*]+|["""*]+$/g, "")
+      .replace(/[，。！？""""、,.!?*]*$/, "")
   );
 }
 
@@ -114,6 +114,9 @@ export function readFromFile() {
 }
 
 export function isIOS() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
   const userAgent = navigator.userAgent.toLowerCase();
   return /iphone|ipad|ipod/.test(userAgent);
 }

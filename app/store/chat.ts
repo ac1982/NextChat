@@ -492,7 +492,10 @@ export const useChatStore = createPersistStore(
         );
 
         // Add detailed browser and session logging
-        console.log("[onUserInput] Browser:", navigator.userAgent);
+        console.log(
+          "[onUserInput] Browser:",
+          typeof navigator !== "undefined" ? navigator.userAgent : "SSR",
+        );
         console.log(
           "[onUserInput] Full modelConfig:",
           JSON.stringify(modelConfig, null, 2),

@@ -367,11 +367,13 @@ export function getClientApi(provider: ServiceProvider | string): ClientApi {
     "| Type:",
     typeof provider,
     "| Browser:",
-    navigator.userAgent.includes("Edge")
-      ? "Edge"
-      : navigator.userAgent.includes("Safari")
-      ? "Safari"
-      : "Other",
+    typeof navigator !== "undefined"
+      ? navigator.userAgent.includes("Edge")
+        ? "Edge"
+        : navigator.userAgent.includes("Safari")
+        ? "Safari"
+        : "Other"
+      : "SSR",
   );
 
   // Standardize the provider name to match Enum case (TitleCase)

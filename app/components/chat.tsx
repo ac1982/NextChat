@@ -967,7 +967,9 @@ export function DeleteImageButton(props: { deleteImage: () => void }) {
 }
 
 export function ShortcutKeyModal(props: { onClose: () => void }) {
-  const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+  const isMac =
+    typeof navigator !== "undefined" &&
+    navigator.platform.toUpperCase().indexOf("MAC") >= 0;
   const shortcuts = [
     {
       title: Locale.Chat.ShortcutKey.newChat,
