@@ -77,8 +77,6 @@ import {
   showPlugins,
 } from "../utils";
 
-import { uploadImage as uploadImageRemote } from "@/app/utils/chat";
-
 import dynamic from "next/dynamic";
 
 import { ChatControllerPool } from "../client/controller";
@@ -1153,6 +1151,15 @@ function _Chat() {
 
   const doSubmit = (userInput: string) => {
     if (userInput.trim() === "" && isEmpty(attachImages)) return;
+
+    console.log("[doSubmit] Called with:", {
+      userInput: userInput?.substring(0, 50) + "...",
+      hasAttachImages: !!attachImages,
+      attachImagesCount: attachImages?.length || 0,
+      attachImagesPreview:
+        attachImages?.map((img) => img?.substring(0, 50) + "...") || [],
+    });
+
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -1576,13 +1583,27 @@ function _Chat() {
               ...(await new Promise<string[]>((res, rej) => {
                 setUploading(true);
                 const imagesData: string[] = [];
-                uploadImageRemote(file)
+                // Use compressImage directly to bypass cache issues
+                import("@/app/utils/chat")
+                  .then(({ compressImage }) => compressImage(file, 256 * 1024))
                   .then((dataUrl) => {
+                    console.log("[uploadImage] Compressed image:", {
+                      fileSize: file.size,
+                      fileName: file.name,
+                      dataUrlLength: dataUrl.length,
+                      isDataUrl: dataUrl.startsWith("data:"),
+                    });
                     imagesData.push(dataUrl);
-                    setUploading(false);
-                    res(imagesData);
+                    if (
+                      imagesData.length === 3 ||
+                      imagesData.length === 1 // Only one file in this context
+                    ) {
+                      setUploading(false);
+                      res(imagesData);
+                    }
                   })
                   .catch((e) => {
+                    console.error("[uploadImage] Compression failed:", e);
                     setUploading(false);
                     rej(e);
                   });
@@ -1618,8 +1639,16 @@ function _Chat() {
           const imagesData: string[] = [];
           for (let i = 0; i < files.length; i++) {
             const file = event.target.files[i];
-            uploadImageRemote(file)
+            // Use compressImage directly to bypass cache issues
+            import("@/app/utils/chat")
+              .then(({ compressImage }) => compressImage(file, 256 * 1024))
               .then((dataUrl) => {
+                console.log("[uploadImage] Compressed image:", {
+                  fileSize: file.size,
+                  fileName: file.name,
+                  dataUrlLength: dataUrl.length,
+                  isDataUrl: dataUrl.startsWith("data:"),
+                });
                 imagesData.push(dataUrl);
                 if (
                   imagesData.length === 3 ||
@@ -1630,6 +1659,7 @@ function _Chat() {
                 }
               })
               .catch((e) => {
+                console.error("[uploadImage] Compression failed:", e);
                 setUploading(false);
                 rej(e);
               });

@@ -412,12 +412,24 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
+        console.log("[onUserInput] Starting with:", {
+          content: content?.substring(0, 50) + "...",
+          hasAttachImages: !!attachImages,
+          attachImagesCount: attachImages?.length || 0,
+          isMcpResponse,
+        });
+
         // MCP Response no need to fill template
         let mContent: string | MultimodalContent[] = isMcpResponse
           ? content
           : fillTemplateWith(content, modelConfig);
 
         if (!isMcpResponse && attachImages && attachImages.length > 0) {
+          console.log("[onUserInput] Processing attached images:", {
+            imageCount: attachImages.length,
+            firstImagePreview: attachImages[0]?.substring(0, 50) + "...",
+          });
+
           mContent = [
             ...(content ? [{ type: "text" as const, text: content }] : []),
             ...attachImages.map((url) => ({
@@ -425,6 +437,14 @@ export const useChatStore = createPersistStore(
               image_url: { url },
             })),
           ];
+
+          console.log("[onUserInput] Created multimodal content:", {
+            isArray: Array.isArray(mContent),
+            contentLength: Array.isArray(mContent) ? mContent.length : "N/A",
+            contentTypes: Array.isArray(mContent)
+              ? mContent.map((item) => item.type)
+              : "N/A",
+          });
         }
 
         let userMessage: ChatMessage = createMessage({
@@ -470,12 +490,106 @@ export const useChatStore = createPersistStore(
           "| Model:",
           modelConfig.model,
         );
+
+        // Add detailed browser and session logging
+        console.log("[onUserInput] Browser:", navigator.userAgent);
+        console.log(
+          "[onUserInput] Full modelConfig:",
+          JSON.stringify(modelConfig, null, 2),
+        );
+        console.log(
+          "[onUserInput] Session mask:",
+          JSON.stringify(session.mask, null, 2),
+        );
+
         // --- 日志结束 ---
 
         // 使用从配置中获取的 providerName，并提供默认值
         const api: ClientApi = getClientApi(
           providerNameFromConfig ?? ServiceProvider.OpenAI,
         );
+
+        // Edge browser workaround: if we're using a Bedrock model but got wrong API, force Bedrock
+        if (
+          modelConfig.model?.includes("anthropic.claude") &&
+          !api.llm.constructor.name.includes("Bedrock")
+        ) {
+          console.warn(
+            "[onUserInput] Edge workaround: Detected Bedrock model but wrong API class:",
+            api.llm.constructor.name,
+            "- forcing Bedrock",
+          );
+          const bedrockApi = getClientApi(ServiceProvider.Bedrock);
+          bedrockApi.llm.chat({
+            messages: sendMessages,
+            config: { ...modelConfig, stream: true },
+            onUpdate(message) {
+              botMessage.streaming = true;
+              if (message) {
+                botMessage.content = message;
+              }
+              get().updateTargetSession(session, (session) => {
+                session.messages = session.messages.concat();
+              });
+            },
+            async onFinish(message) {
+              botMessage.streaming = false;
+              if (message) {
+                botMessage.content = message;
+                botMessage.date = new Date().toLocaleString();
+                get().onNewMessage(botMessage, session);
+              }
+              ChatControllerPool.remove(session.id, botMessage.id);
+            },
+            onBeforeTool(tool: ChatMessageTool) {
+              (botMessage.tools = botMessage?.tools || []).push(tool);
+              get().updateTargetSession(session, (session) => {
+                session.messages = session.messages.concat();
+              });
+            },
+            onAfterTool(tool: ChatMessageTool) {
+              botMessage?.tools?.forEach((t, i, tools) => {
+                if (tool.id == t.id) {
+                  tools[i] = { ...tool };
+                }
+              });
+              get().updateTargetSession(session, (session) => {
+                session.messages = session.messages.concat();
+              });
+            },
+            onError(error) {
+              const isAborted = error.message?.includes?.("aborted");
+              botMessage.content +=
+                "\n\n" +
+                prettyObject({
+                  error: true,
+                  message: error.message,
+                });
+              botMessage.streaming = false;
+              userMessage.isError = !isAborted;
+              botMessage.isError = !isAborted;
+              get().updateTargetSession(session, (session) => {
+                session.messages = session.messages.concat();
+              });
+              ChatControllerPool.remove(
+                session.id,
+                botMessage.id ?? messageIndex,
+              );
+
+              console.error("[Chat] failed ", error);
+            },
+            onController(controller) {
+              // collect controller for stop/retry
+              ChatControllerPool.addController(
+                session.id,
+                botMessage.id ?? messageIndex,
+                controller,
+              );
+            },
+          });
+          return;
+        }
+
         // make request
         api.llm.chat({
           messages: sendMessages,

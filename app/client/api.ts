@@ -366,31 +366,57 @@ export function getClientApi(provider: ServiceProvider | string): ClientApi {
     provider,
     "| Type:",
     typeof provider,
+    "| Browser:",
+    navigator.userAgent.includes("Edge")
+      ? "Edge"
+      : navigator.userAgent.includes("Safari")
+      ? "Safari"
+      : "Other",
   );
 
   // Standardize the provider name to match Enum case (TitleCase)
   let standardizedProvider: ServiceProvider | string;
   if (typeof provider === "string") {
+    console.log(
+      "[getClientApi] Provider is string, attempting to standardize:",
+      provider,
+    );
     // Convert known lowercase versions to their Enum equivalent
     switch (provider.toLowerCase()) {
       case "bedrock":
         standardizedProvider = ServiceProvider.Bedrock;
+        console.log(
+          "[getClientApi] Converted 'bedrock' string to ServiceProvider.Bedrock",
+        );
         break;
       case "openai":
         standardizedProvider = ServiceProvider.OpenAI;
+        console.log(
+          "[getClientApi] Converted 'openai' string to ServiceProvider.OpenAI",
+        );
         break;
       case "google":
         standardizedProvider = ServiceProvider.Google;
         break;
       // Add other potential lowercase strings if needed
       default:
+        console.log(
+          "[getClientApi] Unknown string provider, keeping as-is:",
+          provider,
+        );
         standardizedProvider = provider; // Keep unknown strings as is
     }
   } else {
+    console.log("[getClientApi] Provider is already enum value:", provider);
     standardizedProvider = provider; // Already an Enum value
   }
 
-  console.log("[getClientApi] Standardized Provider:", standardizedProvider);
+  console.log(
+    "[getClientApi] Final Standardized Provider:",
+    standardizedProvider,
+    "| Enum check:",
+    standardizedProvider === ServiceProvider.Bedrock,
+  );
 
   switch (standardizedProvider) {
     case ServiceProvider.Google:
@@ -431,6 +457,18 @@ export function getClientApi(provider: ServiceProvider | string): ClientApi {
       console.log(
         `[getClientApi] Provider '${provider}' (Standardized: '${standardizedProvider}') not matched, returning default GPT.`,
       );
+
+      // Edge browser fallback: check if this is a Bedrock model by name
+      if (
+        typeof provider === "string" &&
+        provider.includes("anthropic.claude")
+      ) {
+        console.log(
+          "[getClientApi] Edge fallback: Detected Bedrock model by name, routing to Bedrock",
+        );
+        return new ClientApi(ModelProvider.Bedrock);
+      }
+
       return new ClientApi(ModelProvider.GPT);
   }
 }

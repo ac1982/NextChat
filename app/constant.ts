@@ -466,6 +466,7 @@ export const VISION_MODEL_REGEXES = [
   /vision/,
   /gpt-4o/,
   /claude-3/,
+  /anthropic\.claude-3/,
   /gemini-1\.5/,
   /gemini-exp/,
   /gemini-2\.0/,
@@ -657,6 +658,24 @@ const siliconflowModels = [
   "Pro/deepseek-ai/DeepSeek-V3",
 ];
 
+const bedrockModels = [
+  "anthropic.claude-3-opus-20240229-v1:0",
+  "anthropic.claude-3-sonnet-20240229-v1:0",
+  "anthropic.claude-3-haiku-20240307-v1:0",
+  "anthropic.claude-3-5-sonnet-20240620-v1:0",
+  "anthropic.claude-3-5-sonnet-20241022-v1:0",
+  "anthropic.claude-3-5-haiku-20241022-v1:0",
+  "anthropic.claude-instant-v1",
+  "amazon.titan-text-express-v1",
+  "amazon.titan-text-lite-v1",
+  "cohere.command-text-v14",
+  "cohere.command-light-text-v14",
+  "ai21.j2-ultra-v1",
+  "ai21.j2-mid-v1",
+  "meta.llama2-13b-chat-v1",
+  "meta.llama2-70b-chat-v1",
+];
+
 let seq = 1000; // 内置的模型序号生成器从1000开始
 export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
@@ -811,6 +830,17 @@ export const DEFAULT_MODELS = [
       providerName: "SiliconFlow",
       providerType: "siliconflow",
       sorted: 14,
+    },
+  })),
+  ...bedrockModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++,
+    provider: {
+      id: "bedrock",
+      providerName: "Bedrock",
+      providerType: "bedrock",
+      sorted: 15,
     },
   })),
 ] as const;
